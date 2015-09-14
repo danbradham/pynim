@@ -88,7 +88,8 @@ class User(BaseModel):
 
     usage::
 
-        >> nim_user = pynim.User.get(username='nim')
+        >> nim_user = pynim.User.find_one(username='nim')
+        >> nim_user
         <User>(_id='1', username='nim')
     '''
 
@@ -109,8 +110,8 @@ class Location(BaseModel):
 
     usage::
 
-        >> nim_location = pynim.Location.get(name='test_location')
-        <Location>(_id='1', username='test_location')
+        >> pynim.Location.find_one(name='test_location')
+        <Location>(_id='1', name='test_location')
     '''
 
     get_uri = 'q=getLocations'
@@ -124,8 +125,8 @@ class Server(BaseModel):
 
     usage::
 
-        >> nim_server = pynim.Server.get(name='nim_server')
-        <Server>(_id='1', username='nim_server')
+        >> pynim.Server.find_one(server='nim_server')
+        <Server>(_id='1', server='nim_server')
     '''
 
     get_uri = 'q=getServers'
@@ -148,7 +149,7 @@ class Job(BaseModel):
 
     usage::
 
-        >> jobs = pynim.Job.get(u='nim')
+        >> pynim.Job.find(u=nim_user)
         [<Job>(_id=XX, number=XXXXX, jobname=JobName, folder=/path/to/job)...]
     '''
 
@@ -200,8 +201,7 @@ class Job(BaseModel):
 
 
 class Show(BaseModel):
-    '''Model representing a NIM Show
-    '''
+    '''Model representing a NIM Show'''
 
     get_uri = 'q=getShows'
     get_requirements = ['ID']
