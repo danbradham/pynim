@@ -1,7 +1,8 @@
 ==============
 NIM Python API
 ==============
-This is an exploration of the NIM HTTP API in Python. It is not ready for production, but, we'll see where it goes.
+This is an exploration of interacting directly with the NIM Database via Python. It is not ready for production and not condoned by nim-labs, but, we'll see what happens. Here we use SQLAlchemy to dynamically generate an ORM
+for the NIM MySQL database. The reason I'm exploring this avenue is because the HTTP api does not yet support POST or PUT requests for most tables in the database.
 
 
 Configuration
@@ -9,51 +10,51 @@ Configuration
 
 ::
 
-    >> import pynim
-    >> pynim.configure(hostname='ny-nim')
+    >>> import pynim
+    >>> pynim.configure(host='ny-nim', user='root', database='n_proj')
 
-In my case I have NIM running under the hostname ny-nim. Yours will almost certainly be different. Without a dns nameserver it will be a standard ip address on your local area network. Once configured we can make requests to our NIM server.
+In my case I have NIM running under the hostname ny-nim. Yours will almost certainly be different. Without a dns nameserver it will be a standard ip address on your local area network. The default user and database for NIM are *root* and *ny_proj*. Once configured we can query the database using an object-relational-model via SQLAlchemy.
 
 
-Finding Users
-=============
+Sessions
+========
 
-::
-
-    >> pynim.User.find()
-    [<User>(_id=1, username=nim)...]
-
-Here we get a list of all users available on the ny-nim server configured above.
+Now that we have configured pynim and generated a basic ORM we can query the database using an SQLAlchemy Session object.
 
 ::
 
-    >> nim_user = pynim.User.find_one(username='nim')
-    >> nim_user
-    <User>(_id=1, username=nim)
+    >>> from pynim import models
+    >>> sess = pynim.get_session()
+    >>> all_users = sess.query(models.Users).all()
+    [<pynim.Users object at 0x0000000004C535F8>, ...]
 
-Now we find the first user with username *nim*. You can query using any User attribute available through the http api.
-
-
-Getting a users jobs
-====================
-
-::
-
-    >> nim_user.get_jobs()
-    [<Job>(_id=9, number=99999, jobname=TESTING, folder=TESTING)]
+For more advanced queries see the SQLAlchemy documentation.
 
 
-Getting a project path relative to a server
-===========================================
-*Bugs in http api here...the ?q=getPaths uri will not return job paths if the job is not yet brought online, and will return paths for another job that IS online. Additionally looking up an asset will return the path to an actual asset not a generic asset path.*
+Getting fields from a model
+===========================
+
+Great, now let's try something like modifying a users username field.
 
 ::
 
-    >> test_server = pynim.Server.find_one(server='TEST_SERVER')
-    >> test_server
-    <Server>(_id=23, server=TEST_SERVER, mountpoint=/media/sf_test, root=Z:/)
-    >> test_job = nim_user.get_job(jobname='TESTING')
-    >> test_job.get_path('job', 'root', test_server)
-    Z:/99999_TESTING
+    >>> franklin = sess.query(models.Users).filter(
+    ...     models.Users.username == 'franklin').first()
+    >>> franklin.username = 'frank'
 
-Here we use the **get_path** method of a Job object to get the jobs root path relative to the test_server. *root* is an attribute unique to pynim, it returns the path for the current platform, in this case *win*.
+So we've modified franklin's username to frank, but we have yet to change the database. Currently this change is just queued up in our Session object. Let's commit the change.
+
+::
+
+    >>> sess.commit()
+
+Now all the changes we made with the Session object have been commited to the database.
+
+All database tables are accessible through this api in the same fashion as models.Users. The beauty is that they are all dynamically created so future changes won't break this implementation, though it may break some client code if a table or column are removed.
+
+
+Plans
+=====
+
+ * Write a slim wrapper around the Dynamically generated models for common functionality.
+ * Abstract session objects away from clients. The basic api should be much simpler handling the session object automatically. If the user wants the power of the session object they still have access through the pynim.get_session method.
