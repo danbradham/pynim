@@ -1,8 +1,7 @@
 ==============
 NIM Python API
 ==============
-This is an exploration of interacting directly with the NIM Database via Python. It is not ready for production and not condoned by nim-labs, but, we'll see what happens. Here we use SQLAlchemy to dynamically generate an ORM
-for the NIM MySQL database. The reason I'm exploring this avenue is because the HTTP api does not yet support POST or PUT requests for most tables in the database.
+This is an unofficial exploration of interacting directly with the NIM Database via Python. It is not ready for production, but, we'll see what happens. Here we use SQLAlchemy to dynamically generate an ORM for the NIM MySQL database. The reason I'm exploring this avenue is because the HTTP api does not yet support POST or PUT requests for most tables in the database.
 
 
 Configuration
